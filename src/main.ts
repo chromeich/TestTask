@@ -22,7 +22,7 @@ import {
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
   const tutorialTexture = await Assets.load("/assets/Tutorial1.png");
-  const tutorialTextTexture = await Assets.load("/assets/Texts/Find.png");
+  const tutorialTextTexture = await Assets.load("/assets/Find.png");
   const guiTextTexture = await Assets.load("/assets/ho_gui.png");
   const bg_main_texture = await Assets.load("/assets/bg_ho.png");
 
@@ -293,7 +293,7 @@ import {
   const bgBlurTexture = await Assets.load("/assets/bg_blur.png");
   const logoTexture = await Assets.load("/assets/logo.png");
   const buttonTexture = await Assets.load("/assets/button.png");
-  const playFreeTexture = await Assets.load("/assets/Texts/Play_free.png");
+  const playFreeTexture = await Assets.load("/assets/Play_free.png");
 
   // Create sprites for book, balerina, basket, and fan
   const bookSprite = new Sprite(bookTexture);
