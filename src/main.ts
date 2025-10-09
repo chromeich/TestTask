@@ -1,3 +1,4 @@
+import "./style.css";
 import tutorialPng from "./compressed/tutorial.png";
 import findPng from "./compressed/find.png";
 import hoGuiPng from "./compressed/ho_gui.png";
