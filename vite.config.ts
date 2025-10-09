@@ -16,4 +16,6 @@ export default defineConfig({
       input: resolve(__dirname, "index.html"),
     },
   },
+  // Ensure images like PNG are always base64 encoded
+  assetsInclude: ["**/Compressed_256_colors/*.png"],
 });

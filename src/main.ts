@@ -1,12 +1,24 @@
+import tutorialPng from "./compressed/tutorial.png";
+import findPng from "./compressed/find.png";
+import hoGuiPng from "./compressed/ho_gui.png";
+import balerinaPng from "./compressed/balerina.png";
+import bgHoPng from "./compressed/bg_ho.png";
+import bookPng from "./compressed/book.png";
+import basketPng from "./compressed/basket.png";
+import fanPng from "./compressed/fan.png";
+import bgBlurPng from "./compressed/bg_blur.png";
+import logoPng from "./compressed/logo.png";
+import buttonPng from "./compressed/button.png";
+import playFreePng from "./compressed/play_free.png";
 import {
   Application,
-  Assets,
   Sprite,
   Container,
   Ticker,
   Text,
   Graphics,
   TextStyle,
+  Assets,
 } from "pixi.js";
 
 (async () => {
@@ -21,26 +33,46 @@ import {
   // Append the application canvas to the document body
   document.getElementById("pixi-container")!.appendChild(app.canvas);
 
-  const tutorialTexture = await Assets.load("/assets/Tutorial1.png");
-  const tutorialTextTexture = await Assets.load("/assets/Find.png");
-  const guiTextTexture = await Assets.load("/assets/ho_gui.png");
-  const bg_main_texture = await Assets.load("/assets/bg_ho.png");
+  // Create textures from base64 strings
+  const tutorialTexture = await Assets.load(tutorialPng);
+  const tutorialTextTexture = await Assets.load(findPng);
+  const guiTextTexture = await Assets.load(hoGuiPng);
+  const backgroundTexture = await Assets.load(bgHoPng);
+  const bookTexture = await Assets.load(bookPng);
+  const balerinaTexture = await Assets.load(balerinaPng);
+  const basketTexture = await Assets.load(basketPng);
+  const fanTexture = await Assets.load(fanPng);
+  const bgBlurTexture = await Assets.load(bgBlurPng);
+  const logoTexture = await Assets.load(logoPng);
+  const buttonTexture = await Assets.load(buttonPng);
+  const playFreeTexture = await Assets.load(playFreePng);
 
-  // Create a Sprite for the background
-  const background = new Sprite(bg_main_texture);
+  // Create sprites from textures
+  const tutorialSprite = new Sprite(tutorialTexture);
+  const tutorialTextSprite = new Sprite(tutorialTextTexture);
+  const guiTextSprite = new Sprite(guiTextTexture);
+  const backgroundSprite = new Sprite(backgroundTexture);
+  const bookSprite = new Sprite(bookTexture);
+  const balerinaSprite = new Sprite(balerinaTexture);
+  const basketSprite = new Sprite(basketTexture);
+  const fanSprite = new Sprite(fanTexture);
+  const bgBlurSprite = new Sprite(bgBlurTexture);
+  const logoSprite = new Sprite(logoTexture);
+  const buttonSprite = new Sprite(buttonTexture);
+  const playFreeSprite = new Sprite(playFreeTexture);
 
   // Set the background to dynamically adjust to the screen size
   const resizeBackground = () => {
     // Scale based on vertical height to fill vertical space
-    const scale = app.screen.height / background.texture.height;
+    const scale = app.screen.height / backgroundSprite.texture.height;
 
     // Set background size preserving aspect ratio, scaled by vertical scale
-    background.width = background.texture.width * scale;
-    background.height = app.screen.height;
+    backgroundSprite.width = backgroundSprite.texture.width * scale;
+    backgroundSprite.height = app.screen.height;
 
     // Position background centered horizontally but cropped on left/right if wider
-    background.position.set(
-      (app.screen.width - background.width) / 2, // negative offset if crop needed
+    backgroundSprite.position.set(
+      (app.screen.width - backgroundSprite.width) / 2, // negative offset if crop needed
       0, // aligned at top vertically
     );
   };
@@ -49,15 +81,11 @@ import {
   resizeBackground();
 
   // Add the background to the stage
-  app.stage.addChild(background);
+  app.stage.addChild(backgroundSprite);
 
   // Create a container for the tutorial
   const tutorialContainer = new Container();
   const guiContainer = new Container();
-  // Create sprites for the tutorial and text
-  const tutorialSprite = new Sprite(tutorialTexture);
-  const tutorialTextSprite = new Sprite(tutorialTextTexture);
-  const guiTextSprite = new Sprite(guiTextTexture);
 
   // Add the sprites to the container
   tutorialContainer.addChild(tutorialSprite);
@@ -196,7 +224,11 @@ import {
   });
 
   // Function to create a fade-out effect
-  const fadeOutAndRemove = (sprite: Sprite, stage: Container, duration: number = 1000) => {
+  const fadeOutAndRemove = (
+    sprite: Sprite,
+    stage: Container,
+    duration: number = 1000,
+  ) => {
     const fadeStep = 1 / (duration / 16.67); // Approximate 60 FPS
     const fadeTicker = new Ticker();
 
@@ -239,8 +271,8 @@ import {
     container.addChild(line);
   };
 
-   // Function to pulse an item
-   const pulseItem = (sprite: Sprite) => {
+  // Function to pulse an item
+  const pulseItem = (sprite: Sprite) => {
     let scaleDirection = 1; // 1 for scaling up, -1 for scaling down
     const pulseTicker = new Ticker();
 
@@ -284,22 +316,6 @@ import {
       highlightFirstUnfoundItem();
     }, 5000); // 5 seconds of inactivity
   };
-
-  // Load the textures
-  const bookTexture = await Assets.load("/assets/book.png");
-  const balerinaTexture = await Assets.load("/assets/balerina.png");
-  const basketTexture = await Assets.load("/assets/basket.png");
-  const fanTexture = await Assets.load("/assets/fan.png");
-  const bgBlurTexture = await Assets.load("/assets/bg_blur.png");
-  const logoTexture = await Assets.load("/assets/logo.png");
-  const buttonTexture = await Assets.load("/assets/button.png");
-  const playFreeTexture = await Assets.load("/assets/Play_free.png");
-
-  // Create sprites for book, balerina, basket, and fan
-  const bookSprite = new Sprite(bookTexture);
-  const balerinaSprite = new Sprite(balerinaTexture);
-  const basketSprite = new Sprite(basketTexture);
-  const fanSprite = new Sprite(fanTexture);
 
   // Set anchor and position for each sprite
   bookSprite.anchor.set(0.5);
@@ -360,14 +376,10 @@ import {
     // Remove all items from the stage
     app.stage.removeChildren();
 
-    // Add the blurred background
-    const bgBlurSprite = new Sprite(bgBlurTexture);
     bgBlurSprite.width = app.screen.width;
     bgBlurSprite.height = app.screen.height;
     app.stage.addChild(bgBlurSprite);
 
-    // Add the logo
-    const logoSprite = new Sprite(logoTexture);
     logoSprite.anchor.set(0.5);
     logoSprite.position.set(app.screen.width / 2, app.screen.height / 3);
     app.stage.addChild(logoSprite);
@@ -375,18 +387,17 @@ import {
     // Create the button container
     const buttonContainer = new Container();
 
-    // Add the button background
-    const buttonSprite = new Sprite(buttonTexture);
     buttonSprite.anchor.set(0.5);
     buttonContainer.addChild(buttonSprite);
 
-    // Add the "Play Free" text
-    const playFreeSprite = new Sprite(playFreeTexture);
     playFreeSprite.anchor.set(0.5);
     buttonContainer.addChild(playFreeSprite);
 
     // Position the button container
-    buttonContainer.position.set(app.screen.width / 2, (app.screen.height * 2) / 3);
+    buttonContainer.position.set(
+      app.screen.width / 2,
+      (app.screen.height * 2) / 3,
+    );
     app.stage.addChild(buttonContainer);
 
     // Add pulsing animation to the button
