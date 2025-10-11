@@ -17,7 +17,6 @@ import {
   Container,
   Ticker,
   Text,
-  Graphics,
   TextStyle,
   Assets,
 } from "pixi.js";
@@ -245,53 +244,62 @@ import {
     fadeTicker.start();
   };
 
-  // Function to cross out text
   const crossOutText = (text: Text, container: Container) => {
-    console.log("Text Position:", text.x, text.y);
-    console.log("Text Dimensions:", text.width, text.height);
+    // Calculate the number of dashes (half the number of characters in the text)
+    const dashCount = Math.ceil(text.text.length / 2);
+    const dashes = "—".repeat(dashCount); // Create a string of dashes
 
-    // Update the text style to gray and italic
-    text.style = new TextStyle({
-      ...text.style,
-      fill: "#888888", // Change color to gray
-      fontStyle: "italic", // Make it italic
+    // Create a new Text element with the calculated dashes
+    const dashText = new Text(dashes, {
+      fill: "#3f0000", // Color for the dashes
+      fontSize: text.style.fontSize, // Match the font size of the original text
+      fontWeight: "bold", // Make the dashes bold
+      align: "center",
     });
 
-    // Draw a line through the text
-    const line = new Graphics();
-    line.lineStyle(2, 0xffffff, 1); // White line with 2px thickness and full opacity
+    // Position the dashes over the original text
+    dashText.anchor.set(0.5); // Center the dashes
+    dashText.position.set(
+      text.x + text.width / 2, // Center horizontally over the original text
+      text.y + text.height / 2, // Center vertically over the original text
+    );
 
-    // Get the global bounds of the text
-    const bounds = text.getBounds();
-    console.log("Text Global Bounds:", bounds);
-
-    line.moveTo(bounds.x, bounds.y + bounds.height / 2); // Start at the middle-left of the text
-    line.lineTo(bounds.x + bounds.width, bounds.y + bounds.height / 2); // End at the middle-right of the text
-
-    // Add the line to the same container as the text
-    container.addChild(line);
+    // Add the dashes to the same container as the text
+    container.addChild(dashText);
   };
 
-  // Function to pulse an item
   const pulseItem = (sprite: Sprite) => {
-    let scaleDirection = 1; // 1 for scaling up, -1 for scaling down
+    let scaleDirection = 1;
+    const minPulse = 0.9;
+    const maxPulse = 1.1;
+    const scaleStep = 0.005;
+    let pulseFactor = 1.0;
+
+    // Store the sprite’s current “default” scale
+    const baseScaleX = sprite.scale.x;
+    const baseScaleY = sprite.scale.y;
+
     const pulseTicker = new Ticker();
 
     pulseTicker.add(() => {
-      sprite.scale.x += 0.005 * scaleDirection;
-      sprite.scale.y += 0.005 * scaleDirection;
+      // Update pulse factor
+      pulseFactor += scaleStep * scaleDirection;
 
-      if (sprite.scale.x > 1.1 || sprite.scale.x < 0.9) {
+      // Reverse when hitting bounds
+      if (pulseFactor >= maxPulse || pulseFactor <= minPulse) {
         scaleDirection *= -1;
+        pulseFactor = Math.min(Math.max(pulseFactor, minPulse), maxPulse);
       }
+
+      // Apply scale relative to base
+      sprite.scale.set(baseScaleX * pulseFactor, baseScaleY * pulseFactor);
     });
 
     pulseTicker.start();
 
-    // Stop pulsing when the item is found
     sprite.once("pointerdown", () => {
       pulseTicker.stop();
-      sprite.scale.set(1); // Reset scale
+      sprite.scale.set(baseScaleX, baseScaleY); // reset to default
     });
   };
 
@@ -324,10 +332,31 @@ import {
   basketSprite.anchor.set(0.5);
   fanSprite.anchor.set(0.5);
 
-  bookSprite.position.set(app.screen.width / 2, app.screen.height / 2);
-  balerinaSprite.position.set(app.screen.width / 4, app.screen.height / 2);
-  basketSprite.position.set(app.screen.width / 2, app.screen.height / 2);
-  fanSprite.position.set((app.screen.width * 3) / 4, app.screen.height / 2);
+  // Set the initial size of each sprite to 1/5 of its original size using texture dimensions
+  const resizeSprite = (sprite: Sprite) => {
+    const scale = 1 / 6;
+    sprite.width = sprite.texture.width * scale;
+    sprite.height = sprite.texture.height * scale;
+  };
+
+  resizeSprite(bookSprite);
+  resizeSprite(balerinaSprite);
+  resizeSprite(basketSprite);
+  resizeSprite(fanSprite);
+
+  bookSprite.position.set(app.screen.width / 2, (app.screen.height / 2) * 1.5);
+  balerinaSprite.position.set(
+    app.screen.width / 2,
+    (app.screen.height / 2) * 1.05,
+  );
+  basketSprite.position.set(
+    (app.screen.width / 4) * 1.14,
+    (app.screen.height / 4) * 3.2,
+  );
+  fanSprite.position.set(
+    (app.screen.width * 3.5) / 4,
+    (app.screen.height / 2) * 1.2,
+  );
 
   // Add the sprites to the stage
   app.stage.addChild(bookSprite);
@@ -423,12 +452,4 @@ import {
   };
 
   resetInactivityTimer();
-
-  // Listen for window resize to reposition the sprites
-  window.addEventListener("resize", () => {
-    bookSprite.position.set(app.screen.width / 2, app.screen.height / 2);
-    balerinaSprite.position.set(app.screen.width / 4, app.screen.height / 2);
-    basketSprite.position.set(app.screen.width / 2, app.screen.height / 2);
-    fanSprite.position.set((app.screen.width * 3) / 4, app.screen.height / 2);
-  });
 })();
