@@ -465,6 +465,5 @@ import {
     });
   };
 
-  showEndScreen();
   resetInactivityTimer();
 })();
