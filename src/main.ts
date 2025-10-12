@@ -1,3 +1,4 @@
+import { MraidHelper } from "./mraid-helper";
 import "./style.css";
 import tutorialPng from "./compressed/tutorial.png";
 import findPng from "./compressed/find.png";
@@ -21,7 +22,7 @@ import {
   Assets,
 } from "pixi.js";
 
-(async () => {
+const startPixiApp = async () => {
   // Create a new application
   const app = new Application();
   // Track found items
@@ -461,9 +462,15 @@ import {
     buttonContainer.interactive = true;
     buttonContainer.on("pointerdown", () => {
       console.log("Play button clicked!");
-      // Add logic to restart the game or navigate to another screen
+      MraidHelper.instance.open("https://play.google.com/");
     });
   };
 
   resetInactivityTimer();
-})();
+};
+
+// Wait for MRAID before initializing Pixi
+MraidHelper.instance.waitForReady(() => {
+  MraidHelper.instance.applySizeToContainer();
+  startPixiApp();
+});
