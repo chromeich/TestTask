@@ -91,7 +91,6 @@ const startPixiApp = async () => {
   // Add the sprites to the container
   tutorialContainer.addChild(tutorialSprite);
   tutorialContainer.addChild(tutorialTextSprite);
-  guiContainer.addChild(guiTextSprite);
 
   // Add text to the guiContainer
   const textStyle = new TextStyle({
@@ -124,15 +123,15 @@ const startPixiApp = async () => {
   );
 
   // Add the text to the guiContainer
+  guiContainer.addChild(guiTextSprite);
   guiContainer.addChild(bookText);
   guiContainer.addChild(fanText);
   guiContainer.addChild(balerinaText);
   guiContainer.addChild(basketText);
 
-  // Set the tutorial container to dynamically adjust its size and position
+  // // Set the tutorial container to dynamically adjust its size and position
   const resizeTutorialContainer = () => {
-    // Scale the tutorial sprite to 1/5 of its default size
-    const scale = 2 / 5;
+    const scale = 1.5 / 5;
     tutorialSprite.width = tutorialSprite.texture.width * scale;
     tutorialSprite.height = tutorialSprite.texture.height * scale;
 
@@ -140,50 +139,11 @@ const startPixiApp = async () => {
     tutorialTextSprite.width = tutorialTextSprite.texture.width * scale;
     tutorialTextSprite.height = tutorialTextSprite.texture.height * scale;
 
-    guiTextSprite.width = guiTextSprite.texture.width * scale;
-    guiTextSprite.height = guiTextSprite.texture.height * scale;
     tutorialTextSprite.position = tutorialSprite.position;
-
     // Position the tutorial text in the center of the tutorial sprite
     tutorialTextSprite.position.set(
       tutorialSprite.width / 2 - tutorialTextSprite.width / 2,
       tutorialSprite.height / 2 - tutorialTextSprite.height / 2 + 10,
-    );
-
-    // Center the container at 4/5 of the screen height
-    tutorialContainer.position.set(
-      app.screen.width / 2 - tutorialContainer.width / 2,
-      app.screen.height / 5 - tutorialContainer.height / 2,
-    );
-
-    // Scale and position the GUI text sprite
-    guiTextSprite.width = guiTextSprite.texture.width * scale * 1.1;
-    guiTextSprite.height = guiTextSprite.texture.height * scale;
-    guiTextSprite.position.set(
-      app.screen.width / 2 - guiTextSprite.width / 2, // Center horizontally
-      app.screen.height - guiTextSprite.height, // Position at the bottom with a 20px margin
-    );
-
-    // Reposition the text in the guiContainer
-    bookText.position.set(
-      app.screen.width / 8 - bookText.width / 2,
-      guiTextSprite.position.y + guiTextSprite.height / 2 - bookText.height / 2,
-    );
-    fanText.position.set(
-      (app.screen.width * 3) / 8 - fanText.width / 2,
-      guiTextSprite.position.y + guiTextSprite.height / 2 - fanText.height / 2,
-    );
-    balerinaText.position.set(
-      (app.screen.width * 5) / 8 - balerinaText.width / 2,
-      guiTextSprite.position.y +
-        guiTextSprite.height / 2 -
-        balerinaText.height / 2,
-    );
-    basketText.position.set(
-      (app.screen.width * 7) / 8 - basketText.width / 2,
-      guiTextSprite.position.y +
-        guiTextSprite.height / 2 -
-        basketText.height / 2,
     );
   };
 
@@ -200,29 +160,42 @@ const startPixiApp = async () => {
     tutorialContainer.height / 2,
   );
 
-  // Adjust the position to place it at the center horizontally and 1/5 of the screen height vertically
-  tutorialContainer.position.set(app.screen.width / 2, app.screen.height / 5);
+  const pulseItem = (sprite: Container) => {
+    let scaleDirection = 1;
+    const minPulse = 0.9;
+    const maxPulse = 1.1;
+    const scaleStep = 0.005;
+    let pulseFactor = 1.0;
 
-  // Add pulsing animation to the tutorial container
-  let scaleDirection = 1; // 1 for scaling up, -1 for scaling down
-  const ticker = new Ticker();
-  ticker.add(() => {
-    // Adjust the scale of the tutorial container
-    tutorialContainer.scale.x += 0.002 * scaleDirection;
-    tutorialContainer.scale.y += 0.002 * scaleDirection;
+    // Store the sprite’s current “default” scale
+    const baseScaleX = sprite.scale.x;
+    const baseScaleY = sprite.scale.y;
 
-    // Reverse direction when reaching scale limits
-    if (tutorialContainer.scale.x > 1.05 || tutorialContainer.scale.x < 0.95) {
-      scaleDirection *= -1;
-    }
-  });
-  ticker.start();
+    const pulseTicker = new Ticker();
 
-  // Listen for window resize to adjust both sprites dynamically
-  window.addEventListener("resize", () => {
-    resizeBackground();
-    resizeTutorialContainer();
-  });
+    pulseTicker.add(() => {
+      // Update pulse factor
+      pulseFactor += scaleStep * scaleDirection;
+
+      // Reverse when hitting bounds
+      if (pulseFactor >= maxPulse || pulseFactor <= minPulse) {
+        scaleDirection *= -1;
+        pulseFactor = Math.min(Math.max(pulseFactor, minPulse), maxPulse);
+      }
+
+      // Apply scale relative to base
+      sprite.scale.set(baseScaleX * pulseFactor, baseScaleY * pulseFactor);
+    });
+
+    pulseTicker.start();
+
+    sprite.once("pointerdown", () => {
+      pulseTicker.stop();
+      sprite.scale.set(baseScaleX, baseScaleY); // reset to default
+    });
+  };
+
+  pulseItem(tutorialContainer);
 
   // Function to create a fade-out effect
   const fadeOutAndRemove = (
@@ -269,41 +242,6 @@ const startPixiApp = async () => {
     container.addChild(dashText);
   };
 
-  const pulseItem = (sprite: Sprite) => {
-    let scaleDirection = 1;
-    const minPulse = 0.9;
-    const maxPulse = 1.1;
-    const scaleStep = 0.005;
-    let pulseFactor = 1.0;
-
-    // Store the sprite’s current “default” scale
-    const baseScaleX = sprite.scale.x;
-    const baseScaleY = sprite.scale.y;
-
-    const pulseTicker = new Ticker();
-
-    pulseTicker.add(() => {
-      // Update pulse factor
-      pulseFactor += scaleStep * scaleDirection;
-
-      // Reverse when hitting bounds
-      if (pulseFactor >= maxPulse || pulseFactor <= minPulse) {
-        scaleDirection *= -1;
-        pulseFactor = Math.min(Math.max(pulseFactor, minPulse), maxPulse);
-      }
-
-      // Apply scale relative to base
-      sprite.scale.set(baseScaleX * pulseFactor, baseScaleY * pulseFactor);
-    });
-
-    pulseTicker.start();
-
-    sprite.once("pointerdown", () => {
-      pulseTicker.stop();
-      sprite.scale.set(baseScaleX, baseScaleY); // reset to default
-    });
-  };
-
   // Function to highlight the first unfound item
   const highlightFirstUnfoundItem = () => {
     if (!foundItems.has("book")) {
@@ -332,18 +270,6 @@ const startPixiApp = async () => {
   balerinaSprite.anchor.set(0.5);
   basketSprite.anchor.set(0.5);
   fanSprite.anchor.set(0.5);
-
-  // Set the initial size of each sprite to 1/5 of its original size using texture dimensions
-  const resizeSprite = (sprite: Sprite) => {
-    const scale = 1 / 6;
-    sprite.width = sprite.texture.width * scale;
-    sprite.height = sprite.texture.height * scale;
-  };
-
-  resizeSprite(bookSprite);
-  resizeSprite(balerinaSprite);
-  resizeSprite(basketSprite);
-  resizeSprite(fanSprite);
 
   bookSprite.position.set(app.screen.width / 2, (app.screen.height / 2) * 1.5);
   balerinaSprite.position.set(
@@ -402,6 +328,7 @@ const startPixiApp = async () => {
     if (foundItems.size === 4) showEndScreen(); // Check if all items are found
   });
 
+  const portrait = window.innerHeight > window.innerWidth; // isPortrait
   const showEndScreen = () => {
     // Remove all items from the stage
     app.stage.removeChildren();
@@ -421,7 +348,7 @@ const startPixiApp = async () => {
 
     // Scale and position the logo
     logoSprite.anchor.set(0.5);
-    logoSprite.scale.set(scale / 1.4); // Downscale the logo
+    logoSprite.scale.set(portrait ? scale * 0.6 : scale); // Downscale the logo
     logoSprite.position.set(app.screen.width / 2, app.screen.height / 3);
     app.stage.addChild(logoSprite);
 
@@ -466,6 +393,93 @@ const startPixiApp = async () => {
     });
   };
 
+  // Call once after init and on resize
+  const resizeAll = () => {
+    // Base scaling relative to the shorter side for consistency
+    const baseScale = Math.min(app.screen.width, app.screen.height) / 800; // tune 800 as a virtual design size
+
+    // Slightly larger in portrait to keep readability
+    const tScale = baseScale * (portrait ? 0.8 : 0.75);
+    tutorialContainer.scale.set(tScale);
+
+    // Place higher in portrait so items have room below
+    tutorialContainer.position.set(
+      app.screen.width * 0.5,
+      portrait ? app.screen.height * 0.2 : app.screen.height * 0.18,
+    );
+
+    // ----- GUI bottom bar -----
+    // Scale gui texture then position flush to bottom
+    const guiScale = baseScale * (portrait ? 1.2 : 1.15) * 0.4;
+    guiTextSprite.scale.set(guiScale);
+    guiTextSprite.position.set(
+      app.screen.width / 2 - guiTextSprite.width / 2,
+      app.screen.height - guiTextSprite.height,
+    );
+
+    // Adaptive font sizes
+    const newFontSize = Math.round(baseScale * (portrait ? 34 : 26));
+    [bookText, fanText, balerinaText, basketText].forEach((t) => {
+      t.style.fontSize = newFontSize;
+    });
+
+    // Positions across the bottom bar
+    const xRatios = portrait ? [0.2, 0.45, 0.65, 0.9] : [0.2, 0.4, 0.6, 0.8];
+    const texts = [bookText, fanText, balerinaText, basketText];
+    texts.forEach((t, i) => {
+      t.position.set(
+        app.screen.width * xRatios[i] - t.width / 2,
+        guiTextSprite.position.y + guiTextSprite.height / 2 - t.height / 2,
+      );
+    });
+
+    // ----- Interactive items (book, balerina, basket, fan) -----
+    // Keep their anchors centered as already set
+    const itemScale = baseScale * (portrait ? 0.37 : 0.25);
+    [bookSprite, balerinaSprite, basketSprite, fanSprite].forEach((s) => {
+      s.scale.set(itemScale);
+    });
+
+    // Portrait: cluster tighter vertically, broader horizontally
+    if (portrait) {
+      bookSprite.position.set(app.screen.width * 0.3, app.screen.height * 0.56);
+      balerinaSprite.position.set(
+        app.screen.width * 0.6,
+        app.screen.height * 0.5,
+      );
+      basketSprite.position.set(
+        app.screen.width * 0.2,
+        app.screen.height * 0.8,
+      );
+      fanSprite.position.set(app.screen.width * 0.95, app.screen.height * 0.78);
+    } else {
+      // Landscape: spread more horizontally
+      bookSprite.position.set(
+        app.screen.width * 0.25,
+        app.screen.height * 0.55,
+      );
+      balerinaSprite.position.set(
+        app.screen.width * 0.45,
+        app.screen.height * 0.7,
+      );
+      basketSprite.position.set(
+        app.screen.width * 0.65,
+        app.screen.height * 0.6,
+      );
+      fanSprite.position.set(app.screen.width * 0.85, app.screen.height * 0.5);
+    }
+  };
+
+  resizeAll(); // initial call
+
+  // Listen for window resize to adjust both sprites dynamically
+  window.addEventListener("resize", () => {
+    resizeBackground();
+    resizeTutorialContainer();
+    resizeAll(); // initial call
+  });
+
+  resizeAll(); // initial call
   resetInactivityTimer();
 };
 

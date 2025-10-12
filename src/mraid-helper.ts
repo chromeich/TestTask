@@ -1,5 +1,3 @@
-/* eslint-disable no-console */
-
 export interface AdSize {
   width: number;
   height: number;
