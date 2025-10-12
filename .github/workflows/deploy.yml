@@ -1,9 +1,9 @@
-name: Deploy to GitHub Pages
+name: Deploy Single HTML File to GitHub Pages
 
 on:
   push:
     branches:
-      - main  # Change to your main branch if it's named differently
+      - main
 
 permissions:
   contents: read
@@ -33,13 +33,16 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Upload the built site to GitHub Pages
-      - name: Upload build output
+      # Ensure there's an index.html at the root of the build output
+      - name: Prepare deployment folder
+        run: |
+          mkdir deploy
+          cp index.html deploy/index.html
+
+      - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: |
-            dist
-            build
+          path: deploy
 
   deploy:
     environment:
