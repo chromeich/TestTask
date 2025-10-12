@@ -401,26 +401,40 @@ import {
     if (foundItems.size === 4) showEndScreen(); // Check if all items are found
   });
 
-  // Function to show the end screen
   const showEndScreen = () => {
     // Remove all items from the stage
     app.stage.removeChildren();
 
-    bgBlurSprite.width = app.screen.width;
+    const scale = app.screen.height / backgroundSprite.texture.height;
+
+    // Set the background to fill the screen
+    bgBlurSprite.width = bgBlurSprite.texture.width * scale;
     bgBlurSprite.height = app.screen.height;
     app.stage.addChild(bgBlurSprite);
 
+    // Center the background horizontally
+    bgBlurSprite.position.set(
+      (app.screen.width - bgBlurSprite.width) / 2, // Center horizontally
+      0, // Align to the top vertically
+    );
+
+    // Scale and position the logo
     logoSprite.anchor.set(0.5);
+    logoSprite.scale.set(scale / 1.4); // Downscale the logo
     logoSprite.position.set(app.screen.width / 2, app.screen.height / 3);
     app.stage.addChild(logoSprite);
 
     // Create the button container
     const buttonContainer = new Container();
 
+    // Scale and position the button
     buttonSprite.anchor.set(0.5);
+    buttonSprite.scale.set(scale); // Downscale the button
     buttonContainer.addChild(buttonSprite);
 
+    // Scale and center the "Play Free" text inside the button
     playFreeSprite.anchor.set(0.5);
+    playFreeSprite.scale.set(scale * 0.8); // Slightly smaller than the button
     buttonContainer.addChild(playFreeSprite);
 
     // Position the button container
@@ -451,5 +465,6 @@ import {
     });
   };
 
+  showEndScreen();
   resetInactivityTimer();
 })();
